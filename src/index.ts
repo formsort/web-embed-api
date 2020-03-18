@@ -15,7 +15,7 @@ export interface IFormsortWebEmbed {
     queryParams?: Array<[string, string]>
   ) => void;
   setSize: (width: string, height: string) => void;
-  on<K extends string & keyof EventMap>(eventName: K, fn: EventMap[K]): void;
+  addEventListener<K extends string & keyof EventMap>(eventName: K, fn: EventMap[K]): void;
 }
 
 interface IFormsortWebEmbedConfig {
@@ -101,21 +101,25 @@ const FormsortWebEmbed = (
 
   const onEventMessage = (eventData: IIFrameAnalyticsEventData) => {
     const { eventType } = eventData;
-    if (eventType === AnalyticsEventType.FlowLoaded) {
-      if (eventListeners.onFlowLoaded) {
-        eventListeners.onFlowLoaded();
-      }
-    } else if (eventType === AnalyticsEventType.FlowClosed) {
-      removeListeners();
-      rootEl.removeChild(iframeEl);
-
-      if (eventListeners.onFlowClosed) {
-        eventListeners.onFlowClosed();
-      }
-    } else if (eventType === AnalyticsEventType.FlowFinalized) {
-      if (eventListeners.onFlowFinalized) {
-        eventListeners.onFlowFinalized();
-      }
+    const { onFlowLoaded, onFlowClosed, onFlowFinalized } = eventListeners;
+    switch (eventType) {
+      case AnalyticsEventType.FlowLoaded:
+        if (onFlowLoaded) {
+          onFlowLoaded();
+        }
+        break;
+      case AnalyticsEventType.FlowClosed:
+        removeListeners();
+        rootEl.removeChild(iframeEl);
+        if (onFlowClosed) {
+          onFlowClosed();
+        }
+        break;
+      case AnalyticsEventType.FlowFinalized:
+        if (onFlowFinalized) {
+          onFlowFinalized();
+        }
+        break;
     }
   };
 
@@ -144,7 +148,7 @@ const FormsortWebEmbed = (
   return {
     loadFlow,
     setSize,
-    on<K extends string & keyof EventMap>(eventName: K, fn: EventMap[K]): void {
+    addEventListener<K extends string & keyof EventMap>(eventName: K, fn: EventMap[K]): void {
       eventListeners[eventName] = fn;
     }
   };
