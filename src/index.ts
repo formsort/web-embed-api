@@ -15,7 +15,10 @@ export interface IFormsortWebEmbed {
     queryParams?: Array<[string, string]>
   ) => void;
   setSize: (width: string, height: string) => void;
-  addEventListener<K extends string & keyof EventMap>(eventName: K, fn: EventMap[K]): void;
+  addEventListener<K extends string & keyof IEventMap>(
+    eventName: K,
+    fn: IEventMap[K]
+  ): void;
 }
 
 interface IFormsortWebEmbedConfig {
@@ -23,11 +26,11 @@ interface IFormsortWebEmbedConfig {
 }
 const DEFAULT_CONFIG: IFormsortWebEmbedConfig = { useHistoryAPI: false };
 
-export interface EventMap {
-  onFlowLoaded?: () => void;
-  onFlowClosed?: () => void;
-  onFlowFinalized?: () => void;
-  onRedirect?: (p: string) => void;
+export interface IEventMap {
+  flowloaded?: () => void;
+  flowclosed?: () => void;
+  flowfinalized?: () => void;
+  redirect?: (p: string) => void;
 }
 
 const FormsortWebEmbed = (
@@ -39,7 +42,7 @@ const FormsortWebEmbed = (
 
   rootEl.appendChild(iframeEl);
 
-  const eventListeners: { [K in keyof EventMap]?: EventMap[K] } = {};
+  const eventListeners: { [K in keyof IEventMap]?: IEventMap[K] } = {};
 
   const onRedirectMessage = (redirectData: IIFrameRedirectEventData) => {
     const currentUrl = window.location.href;
@@ -48,8 +51,8 @@ const FormsortWebEmbed = (
 
     const url = redirectData.payload;
 
-    if (eventListeners.onRedirect) {
-      eventListeners.onRedirect(url);
+    if (eventListeners.redirect) {
+      eventListeners.redirect(url);
     }
 
     const hashIndex = url.indexOf('#');
@@ -101,23 +104,23 @@ const FormsortWebEmbed = (
 
   const onEventMessage = (eventData: IIFrameAnalyticsEventData) => {
     const { eventType } = eventData;
-    const { onFlowLoaded, onFlowClosed, onFlowFinalized } = eventListeners;
+    const { flowloaded, flowclosed, flowfinalized } = eventListeners;
     switch (eventType) {
       case AnalyticsEventType.FlowLoaded:
-        if (onFlowLoaded) {
-          onFlowLoaded();
+        if (flowloaded) {
+          flowloaded();
         }
         break;
       case AnalyticsEventType.FlowClosed:
         removeListeners();
         rootEl.removeChild(iframeEl);
-        if (onFlowClosed) {
-          onFlowClosed();
+        if (flowclosed) {
+          flowclosed();
         }
         break;
       case AnalyticsEventType.FlowFinalized:
-        if (onFlowFinalized) {
-          onFlowFinalized();
+        if (flowfinalized) {
+          flowfinalized();
         }
         break;
     }
@@ -148,9 +151,12 @@ const FormsortWebEmbed = (
   return {
     loadFlow,
     setSize,
-    addEventListener<K extends string & keyof EventMap>(eventName: K, fn: EventMap[K]): void {
+    addEventListener<K extends string & keyof IEventMap>(
+      eventName: K,
+      fn: IEventMap[K]
+    ): void {
       eventListeners[eventName] = fn;
-    }
+    },
   };
 };
 
