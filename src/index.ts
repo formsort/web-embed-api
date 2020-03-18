@@ -28,10 +28,15 @@ const DEFAULT_CONFIG: IFormsortWebEmbedConfig = { useHistoryAPI: false };
 
 const FormsortWebEmbed = (
   rootEl: HTMLElement,
-  config: IFormsortWebEmbedConfig = DEFAULT_CONFIG
+  config: IFormsortWebEmbedConfig = DEFAULT_CONFIG,
+  style?: Partial<Pick<CSSStyleDeclaration, 'width' | 'height'>>
 ): IFormsortWebEmbed => {
   const iframeEl = document.createElement('iframe');
   iframeEl.style.border = 'none';
+  if (style) {
+    iframeEl.style.width = style.width || null;
+    iframeEl.style.height = style.height || null;
+  }
 
   rootEl.appendChild(iframeEl);
 
