@@ -23,19 +23,21 @@ export interface IFormsortWebEmbed {
 
 interface IFormsortWebEmbedConfig {
   useHistoryAPI: boolean;
+  style?: Partial<Pick<CSSStyleDeclaration, 'width' | 'height'>>;
 }
 const DEFAULT_CONFIG: IFormsortWebEmbedConfig = { useHistoryAPI: false };
 
 const FormsortWebEmbed = (
   rootEl: HTMLElement,
-  config: IFormsortWebEmbedConfig = DEFAULT_CONFIG,
-  style?: Partial<Pick<CSSStyleDeclaration, 'width' | 'height'>>
+  config: IFormsortWebEmbedConfig = DEFAULT_CONFIG
 ): IFormsortWebEmbed => {
   const iframeEl = document.createElement('iframe');
+  const { style } = config;
   iframeEl.style.border = 'none';
   if (style) {
-    iframeEl.style.width = style.width || null;
-    iframeEl.style.height = style.height || null;
+    const { width = '', height = '' } = style;
+    iframeEl.style.width = width;
+    iframeEl.style.height = height;
   }
 
   rootEl.appendChild(iframeEl);
